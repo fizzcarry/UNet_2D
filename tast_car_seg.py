@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from SETR_tools import *
+from unet import UNet
 img_url = sorted(glob.glob(r"D:\my_data\segmentation_car/imgs/*"))
 mask_url = sorted(glob.glob(r"D:\my_data\segmentation_car/masks/*"))
 # print(img_url)
@@ -23,7 +24,9 @@ print("device is " + str(device))
 epoches = 100
 out_channels = 1
 
+#选择模型
 def build_model():
+
     model = SETRModel(patch_size=(16, 16), 
                     in_channels=3, 
                     out_channels=1, 
@@ -31,6 +34,7 @@ def build_model():
                     num_hidden_layers=6, 
                     num_attention_heads=16, 
                     decode_features=[512, 256, 128, 64])
+    model = UNet(n_channels=3, n_classes=1, bilinear=False)
     return model
 
 class CarDataset(Dataset):
@@ -125,7 +129,7 @@ if __name__ == "__main__":
             report_loss += loss.item()
             loss.backward()
             optimizer.step()
-            if step%400==0:
+            if step%100==0:
                 plot_RGB_image(img[0].cpu())
                 plot_grayscale_image(mask[0].cpu())
                 plot_grayscale_image(pred_img[0],binary=True)
